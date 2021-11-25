@@ -9,9 +9,31 @@ async function searchMovies() {
   const client = new Client({ database: "omdb" });
   console.log("Welcome to search-movies-cli!");
   await client.connect();
-  const res = await client.query("SELECT name from movies order by id limit 5");
-  console.table(res.rows);
+
+  let searchTerm;
+  while (searchTerm !== "q") {
+    searchTerm = question(`Search for what movie? (or 'q' to quit): `);
+    const text = `select id, name, date, runtime, budget, revenue, vote_average, votes_count
+    from movies
+    where kind = 'movie'
+    and name ilike $1
+    order by date desc
+    limit 10;`;
+    const values = [`%${searchTerm}%`];
+    const res = await client.query(text, values);
+    console.table(res.rows);
+  }
   await client.end();
 }
 
 searchMovies();
+
+// query
+// select id, name, date, runtime, budget, revenue, vote_average, votes_count
+// from movies
+// where kind = 'movie'
+// and name ilike '%Fantastic%'
+// order by date desc
+// limit 10;
+
+// need to make case insensitive - SOLUTION: use ILIKE instead of LIKE
